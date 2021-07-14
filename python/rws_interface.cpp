@@ -1,6 +1,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
+#include <pybind11/numpy.h>
+
 
 // #include "../include/abb_librws/rws_interface.h"
 #include "../include/abb_librws/rws_state_machine_interface.h"
@@ -132,7 +134,7 @@ PYBIND11_MODULE(abb_librws, m) {
         .def_readonly("rws_connected", &RWSInterface::RuntimeInfo::rws_connected)
     ;
     
-    iface.def(py::init<const std::string &>(), py::arg("ip_address"))
+    iface.def(py::init<const std::string &>(), py::arg("ip_address") = "192.168.125.1")
         .def("collect_runtime_info", &RWSInterface::collectRuntimeInfo)
         .def("set_motors_on", &RWSInterface::setMotorsOn)
         .def("set_motors_off", &RWSInterface::setMotorsOff)
@@ -151,7 +153,7 @@ PYBIND11_MODULE(abb_librws, m) {
         .def("is_rapid_running", &RWSInterface::isRAPIDRunning)
     ;
 
-    sm_iface.def(py::init<const std::string &>(), py::arg("ip_address"))
+    sm_iface.def(py::init<const std::string &>(), py::arg("ip_address") = "192.168.125.1")
         .def("services", &RWSStateMachineInterface::services)
     ;    
     
@@ -184,22 +186,28 @@ PYBIND11_MODULE(abb_librws, m) {
 
     py::class_<RobJoint, RAPIDRecord>(m, "RobJoint")
         .def(py::init<>())
+        .def(py::init([](RAPIDNum& rax_1, RAPIDNum& rax_2, RAPIDNum& rax_3, RAPIDNum& rax_4, RAPIDNum& rax_5, RAPIDNum& rax_6) {RobJoint* r = new RobJoint(); r->rax_1 = rax_1; r->rax_2 = rax_2; r->rax_3 = rax_3; r->rax_4 = rax_4; r->rax_5 = rax_5; r->rax_6 = rax_6; return r;}), py::arg("rax_1") = 0.0, py::arg("rax_2") = 0.0, py::arg("rax_3") = 0.0, py::arg("rax_4") = 0.0, py::arg("rax_5") = 0.0, py::arg("rax_6") = 0.0)
+        .def(py::init([](py::array_t<double> arr) {RobJoint* r = new RobJoint(); auto arr_u = arr.mutable_unchecked<1>(); r->rax_1 = arr_u(0); r->rax_2 = arr_u(1); r->rax_3 = arr_u(2); r->rax_4 = arr_u(3); r->rax_5 = arr_u(4); r->rax_6 = arr_u(5); return r;}))
         .def_readwrite("rax_1", &RobJoint::rax_1)
         .def_readwrite("rax_2", &RobJoint::rax_2)
         .def_readwrite("rax_3", &RobJoint::rax_3)
         .def_readwrite("rax_4", &RobJoint::rax_4)
         .def_readwrite("rax_5", &RobJoint::rax_5)
         .def_readwrite("rax_6", &RobJoint::rax_6)
-    ;
+        .def("__repr__", &RobJoint::constructString)
+ ;
 
     py::class_<ExtJoint, RAPIDRecord>(m, "ExtJoint")
         .def(py::init<>())
+        .def(py::init([](RAPIDNum& eax_a, RAPIDNum& eax_b, RAPIDNum& eax_c, RAPIDNum& eax_d, RAPIDNum& eax_e, RAPIDNum& eax_f) {ExtJoint* e = new ExtJoint(); e->eax_a = eax_a; e->eax_b = eax_b; e->eax_c = eax_c; e->eax_d = eax_d; e->eax_e = eax_e; e->eax_f = eax_f; return e;}), py::arg("eax_a") = 0.0, py::arg("eax_b") = 0.0, py::arg("eax_c") = 0.0, py::arg("eax_d") = 0.0, py::arg("eax_e") = 0.0, py::arg("eax_f") = 0.0)
+        .def(py::init([](py::array_t<double> arr) {ExtJoint* e = new ExtJoint(); auto arr_u = arr.mutable_unchecked<1>(); e->eax_a = arr_u(0); e->eax_b = arr_u(1); e->eax_c = arr_u(2); e->eax_d = arr_u(3); e->eax_e = arr_u(4); e->eax_f = arr_u(5); return e;}))
         .def_readwrite("eax_a", &ExtJoint::eax_a)
         .def_readwrite("eax_b", &ExtJoint::eax_b)
         .def_readwrite("eax_c", &ExtJoint::eax_c)
         .def_readwrite("eax_d", &ExtJoint::eax_d)
         .def_readwrite("eax_e", &ExtJoint::eax_e)
         .def_readwrite("eax_f", &ExtJoint::eax_f)
+        .def("__repr__", &ExtJoint::constructString)
     ;
 
     py::class_<Pos, RAPIDRecord>(m, "Pos")
@@ -246,8 +254,10 @@ PYBIND11_MODULE(abb_librws, m) {
     py::class_<JointTarget, RAPIDRecord>(m, "JointTarget")
         .def(py::init<>())
         .def(py::init<const JointTarget&>())
+        .def(py::init([](RobJoint& robax, ExtJoint& extax) {JointTarget* jt = new JointTarget(); jt->robax = robax; jt->extax = extax; return jt;}), py::arg("robax"), py::arg("extax"))
         .def_readwrite("robax", &JointTarget::robax)
         .def_readwrite("extax", &JointTarget::extax)
+        .def("__repr__", &JointTarget::constructString)
     ;
 
     py::class_<TriBool> tribool(m, "TriBool");
