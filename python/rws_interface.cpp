@@ -152,31 +152,34 @@ PYBIND11_MODULE(abb_librws, m) {
     ;
 
     sm_iface.def(py::init<const std::string &>(), py::arg("ip_address"))
-        .def("services", &RWSStateMachineInterface::services, py::return_value_policy::reference_internal)
+        .def("services", &RWSStateMachineInterface::services)
     ;    
     
     py::class_<Services>(m, "Services")
         .def("sg", &Services::sg)
-        // .def("main", &Services::main)
-        .def("rapid", &Services::rapid, py::return_value_policy::reference_internal)
+        .def("main", &Services::main)
+        .def("rapid", &Services::rapid)
     ; 
    
     py::class_<SG>(m, "SmartGripper")
         .def("left_initialize", &SG::leftInitialize)
         .def("left_grip_in", &SG::leftGripIn)
         .def("left_grip_out", &SG::leftGripOut)
+        .def("right_initialize", &SG::rightInitialize)
+        .def("right_grip_in", &SG::rightGripIn)
+        .def("right_grip_out", &SG::rightGripOut)
     ;
 
-    // py::class_<Main>(m, "Main")
-    //     .def("get_current_state", &Main::getCurrentState)
-    //     .def("is_state_idle", &Main::isStateIdle)
-    //     .def("is_stationary", &Main::isStationary)
-    // ;
+    py::class_<Main>(m, "Main")
+        .def("get_current_state", &Main::getCurrentState)
+        .def("is_state_idle", &Main::isStateIdle)
+        .def("is_stationary", &Main::isStationary)
+    ;
     
     py::class_<RAPID>(m, "Rapid")
         .def("run_move_to_calibration_position", &RAPID::runMoveToCalibrationPosition)
-    //     .def("run_move_j", &RAPID::runMoveJ)
-    //     .def("run_move_abs_j", &RAPID::runMoveAbsJ)
+        .def("run_move_j", &RAPID::runMoveJ)
+        .def("run_move_abs_j", &RAPID::runMoveAbsJ)
     ;
 
     py::class_<RobJoint, RAPIDRecord>(m, "RobJoint")
