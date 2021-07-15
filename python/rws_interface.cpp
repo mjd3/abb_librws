@@ -9,6 +9,7 @@
 // #include "../include/abb_librws/rws_common.h"
 // #include "../include/abb_librws/rws_rapid.h"
 
+using namespace pybind11::literals;
 namespace py = pybind11;
 
 namespace abb {
@@ -28,16 +29,18 @@ PYBIND11_MODULE(abb_librws, m) {
     py::implicitly_convertible<bool, RAPIDBool>();
 
     py::class_<RAPIDNum>(m, "RAPIDNum")
-        .def(py::init<const float>(), py::arg("float") = 0.0)
+        .def(py::init<const double>(), py::arg("float") = 0.0)
         .def_readwrite("value", &RAPIDNum::value)
     ;
     py::implicitly_convertible<float, RAPIDNum>();
+    py::implicitly_convertible<int, RAPIDNum>();
 
     py::class_<RAPIDDnum>(m, "RAPIDDnum")
         .def(py::init<const double>(), py::arg("float") = 0.0)
         .def_readwrite("value", &RAPIDDnum::value)
     ;
     py::implicitly_convertible<float, RAPIDDnum>();
+    py::implicitly_convertible<int, RAPIDDnum>();
 
     py::class_<RAPIDString>(m, "RAPIDString")
         .def(py::init<const std::string&>(), py::arg("string") = "")
@@ -84,16 +87,6 @@ PYBIND11_MODULE(abb_librws, m) {
         .value("RUN_RAPID_ROUTINE", RWSStateMachineInterface::States::STATE_RUN_RAPID_ROUTINE)
         .value("RUN_EGM_ROUTINE", RWSStateMachineInterface::States::STATE_RUN_EGM_ROUTINE)
         .value("UNKNOWN", RWSStateMachineInterface::States::STATE_UNKNOWN)
-        .export_values()
-    ;
-    
-    py::enum_<RWSStateMachineInterface::SGCommands>(m, "SGCommands")
-        .value("NONE", RWSStateMachineInterface::SGCommands::SG_COMMAND_NONE)
-        .value("INITIALIZE", RWSStateMachineInterface::SGCommands::SG_COMMAND_INITIALIZE)
-        .value("CALIBRATE", RWSStateMachineInterface::SGCommands::SG_COMMAND_CALIBRATE)
-        .value("MOVE_TO", RWSStateMachineInterface::SGCommands::SG_COMMAND_MOVE_TO)
-        .value("GRIP_IN", RWSStateMachineInterface::SGCommands::SG_COMMAND_GRIP_IN)
-        .value("GRIP_OUT", RWSStateMachineInterface::SGCommands::SG_COMMAND_GRIP_OUT)
         .export_values()
     ;
 
@@ -199,8 +192,37 @@ PYBIND11_MODULE(abb_librws, m) {
 
     py::class_<ExtJoint, RAPIDRecord>(m, "ExtJoint")
         .def(py::init<>())
-        .def(py::init([](RAPIDNum& eax_a, RAPIDNum& eax_b, RAPIDNum& eax_c, RAPIDNum& eax_d, RAPIDNum& eax_e, RAPIDNum& eax_f) {ExtJoint* e = new ExtJoint(); e->eax_a = eax_a; e->eax_b = eax_b; e->eax_c = eax_c; e->eax_d = eax_d; e->eax_e = eax_e; e->eax_f = eax_f; return e;}), py::arg("eax_a") = 0.0, py::arg("eax_b") = 0.0, py::arg("eax_c") = 0.0, py::arg("eax_d") = 0.0, py::arg("eax_e") = 0.0, py::arg("eax_f") = 0.0)
-        .def(py::init([](py::array_t<double> arr) {ExtJoint* e = new ExtJoint(); auto arr_u = arr.mutable_unchecked<1>(); e->eax_a = arr_u(0); e->eax_b = arr_u(1); e->eax_c = arr_u(2); e->eax_d = arr_u(3); e->eax_e = arr_u(4); e->eax_f = arr_u(5); return e;}))
+        .def(py::init(
+            [](RAPIDNum& eax_a, RAPIDNum& eax_b, RAPIDNum& eax_c, RAPIDNum& eax_d, RAPIDNum& eax_e, RAPIDNum& eax_f) {
+                ExtJoint* e = new ExtJoint(); 
+                e->eax_a = eax_a; 
+                e->eax_b = eax_b; 
+                e->eax_c = eax_c; 
+                e->eax_d = eax_d; 
+                e->eax_e = eax_e; 
+                e->eax_f = eax_f; 
+                return e;
+            }), 
+            py::arg("eax_a") = 0.0, 
+            py::arg("eax_b") = 0.0, 
+            py::arg("eax_c") = 0.0, 
+            py::arg("eax_d") = 0.0,
+            py::arg("eax_e") = 0.0, 
+            py::arg("eax_f") = 0.0
+        )
+        .def(py::init(
+            [](py::array_t<double> arr) {
+                ExtJoint* e = new ExtJoint(); 
+                auto arr_u = arr.mutable_unchecked<1>();
+                e->eax_a = arr_u(0);
+                e->eax_b = arr_u(1);
+                e->eax_c = arr_u(2);
+                e->eax_d = arr_u(3); 
+                e->eax_e = arr_u(4); 
+                e->eax_f = arr_u(5);
+                return e;
+            })
+        )
         .def_readwrite("eax_a", &ExtJoint::eax_a)
         .def_readwrite("eax_b", &ExtJoint::eax_b)
         .def_readwrite("eax_c", &ExtJoint::eax_c)
@@ -219,7 +241,16 @@ PYBIND11_MODULE(abb_librws, m) {
 
     py::class_<Orient, RAPIDRecord>(m, "Orient")
         .def(py::init<>())
-        // .def(py::init([](RAPIDNum& q1, RAPIDNum& q2, RAPIDNum& q3, RAPIDNum& q4) { Orient* o = new Orient(); o->q1 = q1; o->q2 = q2; o->q3 = q3; o->q4 = q4; return o;}))
+        .def(py::init<>(
+            [](RAPIDNum& q1, RAPIDNum& q2, RAPIDNum& q3, RAPIDNum& q4) { 
+                Orient* o = new Orient(); 
+                o->q1 = q1; 
+                o->q2 = q2; 
+                o->q3 = q3; 
+                o->q4 = q4; 
+                return o;
+            })
+        )
         .def_readwrite("q1", &Orient::q1)
         .def_readwrite("q2", &Orient::q2)
         .def_readwrite("q3", &Orient::q3)
@@ -229,7 +260,14 @@ PYBIND11_MODULE(abb_librws, m) {
     py::class_<Pose, RAPIDRecord>(m, "Pose")
         .def(py::init<>())
         .def(py::init<const Pose&>())
-        // .def(py::init<const Pos&, const Orient&>([](Pos& pos, Orient& rot) { Pose* pose = new Pose(); pose->pos = pos; pose->rot = rot; return pose; }))
+        .def(py::init<>(
+            [](const Pos& pos, const Orient& rot) { 
+                Pose* pose = new Pose(); 
+                pose->pos = pos; 
+                pose->rot = rot; 
+                return pose;
+            })
+        )
         .def_readwrite("pos", &Pose::pos)
         .def_readwrite("rot", &Pose::rot)
     ;
@@ -254,10 +292,35 @@ PYBIND11_MODULE(abb_librws, m) {
     py::class_<JointTarget, RAPIDRecord>(m, "JointTarget")
         .def(py::init<>())
         .def(py::init<const JointTarget&>())
-        .def(py::init([](RobJoint& robax, ExtJoint& extax) {JointTarget* jt = new JointTarget(); jt->robax = robax; jt->extax = extax; return jt;}), py::arg("robax"), py::arg("extax"))
+        .def(py::init<>(
+            [](const RobJoint& robax, const ExtJoint& extax) {
+                JointTarget* jt = new JointTarget(); 
+                jt->robax = robax; 
+                jt->extax = extax; 
+                return jt;
+            }), 
+            py::arg("robax"), py::arg("extax")
+        )
         .def_readwrite("robax", &JointTarget::robax)
         .def_readwrite("extax", &JointTarget::extax)
         .def("__repr__", &JointTarget::constructString)
+    ;
+
+    py::class_<RWSStateMachineInterface::SGSettings, RAPIDRecord>(m, "SGSettings")
+        .def(py::init<>())
+        .def(py::init<>(
+            [](RAPIDNum& max_speed, RAPIDNum& hold_force, RAPIDNum& physical_limit) {
+                RWSStateMachineInterface::SGSettings* sg = new RWSStateMachineInterface::SGSettings(); 
+                sg->max_speed = max_speed; 
+                sg->hold_force = hold_force; 
+                sg->physical_limit = physical_limit; 
+                return sg;
+            }), 
+            "max_speed"_a, "hold_force"_a, "physical_limit"_a
+        )
+        .def_readwrite("max_speed", &RWSStateMachineInterface::SGSettings::max_speed)
+        .def_readwrite("hold_force", &RWSStateMachineInterface::SGSettings::hold_force)
+        .def_readwrite("physical_limit", &RWSStateMachineInterface::SGSettings::physical_limit)
     ;
 
     py::class_<TriBool> tribool(m, "TriBool");
