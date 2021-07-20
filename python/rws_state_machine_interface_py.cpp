@@ -62,9 +62,10 @@ PYBIND11_MODULE(abb_librws, m) {
     ;
 
     py::class_<RAPID>(m, "Rapid")
-        .def("run_move_to_calibration_position", &RAPID::runMoveToCalibrationPosition)
-        .def("run_move_j", &RAPID::runMoveJ)
         .def("run_move_abs_j", &RAPID::runMoveAbsJ)
+        .def("run_move_j", &RAPID::runMoveJ)
+        .def("run_move_to_calibration_position", &RAPID::runMoveToCalibrationPosition)
+        .def("set_move_speed", &RAPID::setMoveSpeed)
     ;
 
     py::class_<RWSStateMachineInterface::SGSettings, RAPIDRecord>(m, "SGSettings")
