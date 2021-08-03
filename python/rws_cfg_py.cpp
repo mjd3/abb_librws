@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "../include/abb_librws/rws_cfg.h"
+#include <abb_librws/rws_cfg.h>
 
 using namespace pybind11::literals;
 namespace py = pybind11;

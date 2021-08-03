@@ -2,7 +2,7 @@
 #include <pybind11/operators.h>
 #include <pybind11/numpy.h>
 
-#include "../include/abb_librws/rws_rapid.h"
+#include <abb_librws/rws_rapid.h>
 
 using namespace pybind11::literals;
 namespace py = pybind11;
@@ -97,9 +97,9 @@ void init_rapid(py::module &m){
                 e->eax_f = eax_f;
                 return e;
             }),
-            "eax_a"_a = 0.0, "eax_b"_a = 0.0,
-            "eax_c"_a = 0.0, "eax_d"_a = 0.0,
-            "eax_e"_a = 0.0, "eax_f"_a = 0.0
+            "eax_a"_a = 9e9, "eax_b"_a = 9e9,
+            "eax_c"_a = 9e9, "eax_d"_a = 9e9,
+            "eax_e"_a = 9e9, "eax_f"_a = 9e9
         )
         .def(py::init(
             [](py::array_t<double> arr) {
@@ -302,7 +302,7 @@ void init_rapid(py::module &m){
             "v_tcp"_a, "v_ori"_a, "v_leax"_a, "v_reax"_a
         )
         .def(py::init(
-            [](py::array_t<double> arr) {
+            [](py::array_t<double, py::array::forcecast> arr) {
                 auto arr_u = arr.unchecked<1>();
                 if (arr_u.size() != 4) {
                     throw std::length_error("Input array is not of length 4!");
@@ -320,6 +320,49 @@ void init_rapid(py::module &m){
         .def_readwrite("v_ori", &SpeedData::v_ori)
         .def_readwrite("v_leax", &SpeedData::v_leax)
         .def_readwrite("v_reax", &SpeedData::v_reax)
+    ;
+
+    py::class_<ZoneData, RAPIDRecord>(m, "ZoneData")
+        .def(py::init<>())
+        .def(py::init(
+            [](RAPIDBool& finep, RAPIDNum& pzone_tcp, RAPIDNum& pzone_ori, RAPIDNum& pzone_eax, RAPIDNum& zone_ori, RAPIDNum& zone_leax, RAPIDNum& zone_reax) {
+                ZoneData* zd = new ZoneData();
+                zd->finep = finep;
+                zd->pzone_tcp = pzone_tcp;
+                zd->pzone_ori = pzone_ori;
+                zd->pzone_eax = pzone_eax;
+                zd->zone_ori = zone_ori;
+                zd->zone_leax = zone_leax;
+                zd->zone_reax = zone_reax;
+                return zd;
+            }),
+            "finep"_a, "pzone_tcp"_a, "pzone_ori"_a, "pzone_eax"_a, "zone_ori"_a, "zone_leax"_a, "zone_reax"_a
+        )
+        .def(py::init(
+            [](py::array_t<double, py::array::forcecast> arr) {
+                auto arr_u = arr.unchecked<1>();
+                if (arr_u.size() != 7) {
+                    throw std::length_error("Input array is not of length 7!");
+                }
+                ZoneData* zd = new ZoneData();
+                zd->finep = arr_u(0);
+                zd->pzone_tcp = arr_u(1);
+                zd->pzone_ori = arr_u(2);
+                zd->pzone_eax = arr_u(3);
+                zd->zone_ori = arr_u(4);
+                zd->zone_leax = arr_u(5);
+                zd->zone_reax = arr_u(6);
+                return zd;
+            }),
+            "zone_data"_a
+        )
+        .def_readwrite("finep", &ZoneData::finep)
+        .def_readwrite("pzone_tcp", &ZoneData::pzone_tcp)
+        .def_readwrite("pzone_ori", &ZoneData::pzone_ori)
+        .def_readwrite("pzone_eax", &ZoneData::pzone_eax)
+        .def_readwrite("zone_ori", &ZoneData::zone_ori)
+        .def_readwrite("zone_leax", &ZoneData::zone_leax)
+        .def_readwrite("zone_reax", &ZoneData::zone_reax)
     ;
 
 }
